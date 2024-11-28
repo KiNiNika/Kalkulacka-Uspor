@@ -1,0 +1,353 @@
+<html><head><base href="https://uspory-kalkulator.sk/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investičná kalkulačka</title>
+<style>
+    :root {
+        --primary-color: #FF8C00; /* Orange */
+        --secondary-color: #C0C0C0; /* Silver */
+        --background-color: #FFFFFF; /* White */
+        --text-color: #333333;
+        --border-color: #E0E0E0;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #FFFFFF;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+
+    h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    input[type="number"], select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    input[type="range"] {
+        width: 100%;
+        margin-top: 0.5rem;
+        -webkit-appearance: none;
+        background: var(--secondary-color);
+        outline: none;
+        opacity: 0.7;
+        transition: opacity .2s;
+    }
+
+    input[type="range"]:hover {
+        opacity: 1;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: var(--primary-color);
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        background: var(--primary-color);
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+    .range-value {
+        text-align: right;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    button {
+        width: 100%;
+        padding: 1rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #E67E00;
+    }
+
+    #result {
+        margin-top: 2rem;
+        padding: 1rem;
+        background-color: var(--secondary-color);
+        border-radius: 4px;
+        color: var(--text-color);
+    }
+
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-value {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .chart-container {
+        margin-top: 2rem;
+        height: 300px;
+    }
+
+    .disclaimer {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: #666;
+        text-align: center;
+    }
+
+    .info-banner {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .info-text {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 1rem;
+        }
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Investičná kalkulačka</h1>
+    <div class="input-group">
+        <label for="initialInvestment">Počiatočná investícia (€)</label>
+        <input type="number" id="initialInvestment" min="0" value="1000">
+    </div>
+    <div class="input-group">
+        <label for="monthlyContribution">Mesačný vklad (€)</label>
+        <input type="number" id="monthlyContribution" min="0" value="100">
+    </div>
+    <div class="input-group">
+        <label for="investmentPeriod">Doba investovania (roky)</label>
+        <input type="range" id="investmentPeriod" min="1" max="40" value="10">
+        <div class="range-value"><span id="investmentPeriodValue">10</span> rokov</div>
+    </div>
+    <div class="input-group">
+        <label for="expectedReturn">Očakávaný ročný výnos (%)</label>
+        <input type="number" id="expectedReturn" min="0" max="100" step="0.1" value="7">
+    </div>
+    <div class="input-group">
+        <label for="riskProfile">Rizikový profil</label>
+        <select id="riskProfile">
+            <option value="conservative">Konzervatívny</option>
+            <option value="balanced" selected>Vyvážený</option>
+            <option value="dynamic">Dynamický</option>
+        </select>
+    </div>
+    <button onclick="calculateInvestment()">Vypočítať investíciu</button>
+    <div id="result"></div>
+    <div class="info-banner" onclick="toggleInfoText()">Kliknite pre viac informácií o výnosoch</div>
+    <div id="infoText" class="info-text">
+        Minulé výnosy nie sú zárukou budúcich výnosov. Ide o teoretické zhodnotenie. Skutočné zhodnotenie závisí aj od vývoja finančných trhov a výsledkom investície môže byť aj strata. Uvedená investičná stratégia nemusí byť vhodná pre každého.
+    </div>
+    <div class="chart-container">
+        <canvas id="investmentChart"></canvas>
+    </div>
+    <div class="disclaimer">
+        Minulé výnosy nie sú zárukou budúcich výnosov.
+    </div>
+</div>
+
+<script>
+let chart;
+
+function calculateInvestment() {
+    const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
+    const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value);
+    const investmentPeriod = parseInt(document.getElementById('investmentPeriod').value);
+    const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) / 100;
+    const riskProfile = document.getElementById('riskProfile').value;
+
+    let totalInvestment = initialInvestment;
+    let totalContributions = initialInvestment;
+    const yearlyData = [initialInvestment];
+    const opportunisticData = [initialInvestment];
+    const negativeData = [initialInvestment];
+
+    for (let year = 1; year <= investmentPeriod; year++) {
+        totalContributions += monthlyContribution * 12;
+        totalInvestment = (totalInvestment + monthlyContribution * 12) * (1 + expectedReturn);
+        yearlyData.push(totalInvestment);
+
+        // Opportunistic scenario (1.5x expected return)
+        opportunisticData.push((opportunisticData[year-1] + monthlyContribution * 12) * (1 + expectedReturn * 1.5));
+
+        // Negative scenario (0.5x expected return)
+        negativeData.push((negativeData[year-1] + monthlyContribution * 12) * (1 + expectedReturn * 0.5));
+    }
+
+    const totalEarnings = totalInvestment - totalContributions;
+
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = `
+        <div class="result-item">
+            <span>Celková hodnota investície:</span>
+            <span class="result-value">${totalInvestment.toFixed(2)} €</span>
+        </div>
+        <div class="result-item">
+            <span>Celkové vklady:</span>
+            <span class="result-value">${totalContributions.toFixed(2)} €</span>
+        </div>
+        <div class="result-item">
+            <span>Celkový zisk:</span>
+            <span class="result-value">${totalEarnings.toFixed(2)} €</span>
+        </div>
+    `;
+
+    updateChart(yearlyData, opportunisticData, negativeData);
+}
+
+function updateChart(data, opportunisticData, negativeData) {
+    const ctx = document.getElementById('investmentChart').getContext('2d');
+    
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: data.length}, (_, i) => i),
+            datasets: [
+                {
+                    label: 'Očakávaný vývoj',
+                    data: data,
+                    borderColor: '#FF8C00',
+                    backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Optimistický vývoj',
+                    data: opportunisticData,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Pesimistický vývoj',
+                    data: negativeData,
+                    borderColor: '#F44336',
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value.toLocaleString() + ' €';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#333333'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update range value display
+document.getElementById('investmentPeriod').addEventListener('input', function() {
+    document.getElementById('investmentPeriodValue').textContent = this.value;
+});
+
+function toggleInfoText() {
+    const infoText = document.getElementById('infoText');
+    if (infoText.style.display === 'none' || infoText.style.display === '') {
+        infoText.style.display = 'block';
+    } else {
+        infoText.style.display = 'none';
+    }
+}
+
+// Initial calculation
+calculateInvestment();
+</script>
+</body></html>
